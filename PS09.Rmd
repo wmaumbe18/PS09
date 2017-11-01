@@ -29,7 +29,6 @@ Please indicate who you collaborated with on this assignment:
 
 
 
-
 # Question 1: Run k-means
 
 ```{r}
@@ -83,7 +82,7 @@ results.
 
 Read ISLR page 388 Algorithm 10.1 and implement k-means clustering from scratch.
 Don't worry about doing it for general $k$; keep it simple and do it for $k=2$
-specifically.
+specifically. Apply it to `observations_2` from above.
 
 ```{r}
 # Hint:
@@ -100,5 +99,3 @@ distance_matrix <- proxy::dist(x=A, y=B)
 distance_matrix
 apply(distance_matrix, 1, which.min)
 ```
-
-
