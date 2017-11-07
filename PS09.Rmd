@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 09"
-author: "WRITE YOUR NAME(S) HERE"
+author: "Wayne Maumbe"
 date: "2017-11-07"
 output:
   html_document:
@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 set.seed(76)
 
 library(tidyverse)
+graph<-vector("list",10)
 ```
 
 
@@ -27,7 +28,7 @@ library(tidyverse)
 
 Please indicate who you collaborated with on this assignment: 
 
-
+Meron Gedrago
 
 # Question 1: Run k-means
 
@@ -39,10 +40,15 @@ observations_2 <- read_csv("data/observations_2.csv")
 observations <- observations_2
 
 # Fit model for k=2
+for (i in 1:10) {
+  
 k <- 2
-k_means_results <- kmeans(observations, centers=k)
+k_means_results <- kmeans(observations, centers=k, iter.max = 10)
 clusters <- k_means_results$cluster
 cluster_centers <- k_means_results$centers
+
+
+
 
 # Add cluster results to observations. Note we convert to factor since cluster
 # ID's should be treated as categorical
@@ -53,28 +59,73 @@ cluster_centers <- cluster_centers %>%
   as_tibble() %>% 
   mutate(cluster=as.factor(1:k))
 
-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+graph[[i]]<-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
   geom_point(data=observations) +
   geom_point(data=cluster_centers, size=5)
+}
+gridExtra::grid.arrange(graph[[1]],graph[[2]],graph[[3]],graph[[4]],graph[[5]],graph[[6]],graph[[7]],graph[[8]],graph[[9]],graph[[10]],ncol=2)
+```
+
+
+```{r}
+# Set observations to be one of two datasets
+observations <- observations_1
+
+for (i in 1:10) {
+# Fit model for k=2
+k <- 2
+k_means_results <- kmeans(observations, centers=k, iter.max = 10)
+clusters <- k_means_results$cluster
+cluster_centers <- k_means_results$centers
+
+
+
+
+# Add cluster results to observations. Note we convert to factor since cluster
+# ID's should be treated as categorical
+observations$cluster <- as.factor(clusters)
+
+# Add cluster ID's to cluster_centers
+cluster_centers <- cluster_centers %>% 
+  as_tibble() %>% 
+  mutate(cluster=as.factor(1:k))
+
+graph[[i]]<-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=observations) +
+  geom_point(data=cluster_centers, size=5)
+
+}
+gridExtra::grid.arrange(graph[[1]],graph[[2]],graph[[3]],graph[[4]],graph[[5]],graph[[6]],graph[[7]],graph[[8]],graph[[9]],graph[[10]],ncol=2)
+
+
 ```
 
 **Questions**:
 
 1. Run KMC 10 times on `observations_1` and comment on the consistency of the
 results.
-1. Speculate on the root cause of any consistency or inconsistency in the
+alternating 
+2. Speculate on the root cause of any consistency or inconsistency in the
 results.
-1. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
+3. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
 results.
-1. Speculate on the root cause of any consistency or inconsistency in the
+4. Speculate on the root cause of any consistency or inconsistency in the
 results.
 
 **Answers**:
 
-1.
-1.
-1.
-1.
+####Observation 1
+1. The resulting plots for KMC run 10 times show an alternating pattern between clusters that is the 1st and 2nd, 5th and 6th and 9th and 10th. They show that the assignment of points to either cluster 1 or 2 is alternating. 
+  The separation/ clustering is consistent throughout the 10 times. This means that each cluster either 1 or 2 is always containing the same points regardless of which cluster it is. 
+  
+2. The inconsistency noted above is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is consistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group.
+
+####Observation 2
+3. The resulting plots for KMC run 10 times show after 7 times a somewhat alternating pattern between clusters. They show that thereafter the assignment of points to either cluster 1 or 2 is alternating.  
+  The separation/ clustering is consistent throughout the 10 times. This means that each cluster either 1 or 2 is always containing the same points regardless of which cluster it is. 
+  
+4. The inconsistency noted above is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is consistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group. 
+
 
 
 
@@ -84,7 +135,7 @@ Read ISLR page 388 Algorithm 10.1 and implement k-means clustering from scratch.
 Don't worry about doing it for general $k$; keep it simple and do it for $k=2$
 specifically. Apply it to `observations_2` from above.
 
-```{r}
+```{r eval=FALSE}
 # Hint:
 library(proxy)
 A <- data_frame(
