@@ -35,71 +35,40 @@ Meron Gedrago
 ```{r}
 observations_1 <- read_csv("data/observations_1.csv")
 observations_2 <- read_csv("data/observations_2.csv")
-
-# Set observations to be one of two datasets
-observations <- observations_2
-
-# Fit model for k=2
-for (i in 1:10) {
-  
-k <- 2
-k_means_results <- kmeans(observations, centers=k, iter.max = 10)
-clusters <- k_means_results$cluster
-cluster_centers <- k_means_results$centers
-
-
-
-
-# Add cluster results to observations. Note we convert to factor since cluster
-# ID's should be treated as categorical
-observations$cluster <- as.factor(clusters)
-
-# Add cluster ID's to cluster_centers
-cluster_centers <- cluster_centers %>% 
-  as_tibble() %>% 
-  mutate(cluster=as.factor(1:k))
-
-graph[[i]]<-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
-  geom_point(data=observations) +
-  geom_point(data=cluster_centers, size=5)
-}
-gridExtra::grid.arrange(graph[[1]],graph[[2]],graph[[3]],graph[[4]],graph[[5]],graph[[6]],graph[[7]],graph[[8]],graph[[9]],graph[[10]],ncol=2)
-```
-
-
-```{r}
-# Set observations to be one of two datasets
 observations <- observations_1
+cluster_center_list <- list()
+mutated_observation_list <- list()
+set.seed(1002)
+for (i in 1:10){
+  k <- 2
+  k_means_results <- kmeans(observations, centers = k)
+  clusters <- k_means_results$cluster
+  cluster_centers <- k_means_results$centers
+  
+  # Add cluster results to observations. Note we convert to factor since cluster
+  # ID's should be treated as categorical
+  dataframe <- data.frame(x1 = observations[,1], x2 = observations[,2], cluster = as.factor(clusters))
+  mutated_observation_list[[i]] <- dataframe
 
-for (i in 1:10) {
-# Fit model for k=2
-k <- 2
-k_means_results <- kmeans(observations, centers=k, iter.max = 10)
-clusters <- k_means_results$cluster
-cluster_centers <- k_means_results$centers
-
-
-
-
-# Add cluster results to observations. Note we convert to factor since cluster
-# ID's should be treated as categorical
-observations$cluster <- as.factor(clusters)
-
-# Add cluster ID's to cluster_centers
-cluster_centers <- cluster_centers %>% 
-  as_tibble() %>% 
-  mutate(cluster=as.factor(1:k))
-
-graph[[i]]<-ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
-  geom_point(data=observations) +
-  geom_point(data=cluster_centers, size=5)
-
+  # Add cluster ID's to cluster_centers
+  cluster_centers <- cluster_centers %>% 
+    as_tibble() %>% 
+    mutate(cluster=as.factor(1:k))
+  cluster_center_list[[i]] <- cluster_centers
 }
-gridExtra::grid.arrange(graph[[1]],graph[[2]],graph[[3]],graph[[4]],graph[[5]],graph[[6]],graph[[7]],graph[[8]],graph[[9]],graph[[10]],ncol=2)
 
+plots <- list()
 
+for (i in 1:10){
+  plot <- ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=mutated_observation_list[[i]]) +
+  geom_point(data=cluster_center_list[[i]], size=5)
+  
+  plots[[i]] <- plot
+}
+
+cowplot::plot_grid(plotlist = plots, nrow = 5, ncol = 2)
 ```
-
 **Questions**:
 
 1. Run KMC 10 times on `observations_1` and comment on the consistency of the
@@ -107,6 +76,58 @@ results.
 alternating 
 2. Speculate on the root cause of any consistency or inconsistency in the
 results.
+
+**Answers**:
+
+####Observation 1
+1. The resulting plots for KMC run 10 times show a somewhat alternating pattern between clusters . They show that the assignment of the same points to either cluster 1 or 2 is alternating. 
+  The separation/ clustering is inconsistent. There is also a somewhat  alternating pattern on the location of the cluster center hence influencing an alternating pattern on the where the separation between clusters lie. 
+  
+2. The inconsistency noted above about  the assigment of points to either cluster  is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is inconsistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group. Since there is no clear grouping of points in this observation it is harder to attain this goal because there could be more than one way to cluster the points and still attain this goal.
+
+
+
+```{r}
+ #Set observations to be one of two datasets
+observations <- observations_2
+
+cluster_center_list <- list()
+mutated_observation_list <- list()
+set.seed(1002)
+for (i in 1:10){
+  k <- 2
+  k_means_results <- kmeans(observations, centers = k)
+  clusters <- k_means_results$cluster
+  cluster_centers <- k_means_results$centers
+  
+  # Add cluster results to observations. Note we convert to factor since cluster
+  # ID's should be treated as categorical
+  dataframe <- data.frame(x1 = observations[,1], x2 = observations[,2], cluster = as.factor(clusters))
+  mutated_observation_list[[i]] <- dataframe
+
+  # Add cluster ID's to cluster_centers
+  cluster_centers <- cluster_centers %>% 
+    as_tibble() %>% 
+    mutate(cluster=as.factor(1:k))
+  cluster_center_list[[i]] <- cluster_centers
+}
+
+plots <- list()
+
+for (i in 1:10){
+  plot <- ggplot(NULL, aes(x=x1, y=x2, col=cluster)) +
+  geom_point(data=mutated_observation_list[[i]]) +
+  geom_point(data=cluster_center_list[[i]], size=5)
+  
+  plots[[i]] <- plot
+}
+
+cowplot::plot_grid(plotlist = plots, nrow = 5, ncol = 2)
+```
+
+**Questions**:
+
+
 3. Run KMC 10 times on `observations_2` and comment on the consistentcy of the
 results.
 4. Speculate on the root cause of any consistency or inconsistency in the
@@ -114,17 +135,12 @@ results.
 
 **Answers**:
 
-####Observation 1
-1. The resulting plots for KMC run 10 times show an alternating pattern between clusters that is the 1st and 2nd, 5th and 6th and 9th and 10th. They show that the assignment of points to either cluster 1 or 2 is alternating. 
-  The separation/ clustering is consistent throughout the 10 times. This means that each cluster either 1 or 2 is always containing the same points regardless of which cluster it is. 
-  
-2. The inconsistency noted above is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is consistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group.
 
 ####Observation 2
-3. The resulting plots for KMC run 10 times show after 7 times a somewhat alternating pattern between clusters. They show that thereafter the assignment of points to either cluster 1 or 2 is alternating.  
-  The separation/ clustering is consistent throughout the 10 times. This means that each cluster either 1 or 2 is always containing the same points regardless of which cluster it is. 
+3. The resulting plots for KMC run 10 times show a somewhat alternating pattern between the assigment of the two clusters. They show that thereafter the assignment of points to either cluster 1 or 2 is alternating.  
+  The separation/ clustering is consistent throughout the 10 times. This means that each cluster either 1 or 2 is always containing the same points regardless of which cluster it is. Also consistent is the location of the cluster centers regardeless of which cluster it is.
   
-4. The inconsistency noted above is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is consistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group. 
+4. The inconsistency noted above is due to the random assignment of clusters 1 or 2 to the points. The separation/clustering is consistent because the algorithm aims to minimize dissimilarity within  the group and increase it between the group. This observation makes this aim easily attainable because the points themselves are patterned in somewhat clear groups hence its easier to enforce clustering on already grouped data. 
 
 
 
